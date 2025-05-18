@@ -12,6 +12,7 @@
             direction: rtl;
             background-color: #f8f9fa;
         }
+
         video {
             border: 1px solid #ccc;
             border-radius: 10px;
@@ -19,6 +20,7 @@
             width: 100%;
             max-width: 320px;
         }
+
         .video-container {
             margin-bottom: 20px;
         }
@@ -31,11 +33,11 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <label for="myUsername" class="form-label">نام کاربری من:</label>
-            <input id="myUsername" class="form-control" placeholder="مثلاً ali123" />
+            <input id="myUsername" class="form-control" placeholder="مثلاً ali123"/>
         </div>
         <div class="col-md-6">
             <label for="targetUsername" class="form-label">نام کاربری مقصد:</label>
-            <input id="targetUsername" class="form-control" placeholder="مثلاً sara456" />
+            <input id="targetUsername" class="form-control" placeholder="مثلاً sara456"/>
         </div>
     </div>
 
@@ -64,14 +66,14 @@
 
     window.onload = async () => {
         try {
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
             localVideo.srcObject = localStream;
-            console.log("دسترسی به دوربین و میکروفون برقرار شد.");
         } catch (error) {
-            alert("دسترسی به دوربین و میکروفون رد شد!");
-            console.error("خطا در دسترسی به رسانه:", error);
+            console.error("دسترسی رد شد:", error);
+            alert("مشکلی در دسترسی به دوربین یا میکروفون پیش آمد.");
         }
     };
+
 
     async function startCall() {
         const myUsername = myUsernameInput.value.trim();
@@ -87,7 +89,7 @@
         socket = new WebSocket(`${protocol}://${window.location.host}/ws/video/${myUsername}/`);
 
         pc = new RTCPeerConnection({
-            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+            iceServers: [{urls: "stun:stun.l.google.com:19302"}]
         });
 
         localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
