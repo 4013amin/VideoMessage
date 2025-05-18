@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>تماس تصویری WebRTC</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            direction: rtl;
+        }
+        video {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>تماس تصویری بین دو کاربر</h2>
+
+    <label>نام کاربری من:
+        <input id="myUsername" placeholder="مثلاً ali123" />
+    </label><br><br>
+
+    <label>نام کاربری مقصد:
+        <input id="targetUsername" placeholder="مثلاً sara456" />
+    </label><br><br>
+
+    <button onclick="startCall()">شروع تماس</button>
+
+    <h3>ویدیو من:</h3>
+    <video id="localVideo" autoplay muted playsinline width="320" height="240"></video>
+
+    <h3>ویدیو طرف مقابل:</h3>
+    <video id="remoteVideo" autoplay playsinline width="320" height="240"></video>
+
+    <script>
+        let localVideo = document.getElementById("localVideo");
+        let remoteVideo = document.getElementById("remoteVideo");
+        let myUsernameInput = document.getElementById("myUsername");
+        let targetUsernameInput = document.getElementById("targetUsername");
+        let localStream;
+        let pc;
+        let socket;
+
+        window.onload = async () => {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localVideo.srcObject = localStream;
+            } catch (error) {
+                alert("دسترسی به دوربین و میکروفون رد شد!");
+                console.error(error);
+            }
+        };
+
+        async function startCall() {
+            const myUsername = myUsernameInput.value.trim();
+            const targetUsername = targetUsernameInput.value.trim();
+
+            if (!myUsername || !targetUsername) {
+                alert("هر دو نام کاربری را وارد کنید.");
+                return;
+            }
+
+            socket = new WebSocket(`ws://${window.location.host}/ws/video/${myUsername}/`);
+
+            pc = new RTCPeerConnection({
+                iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+            });
+
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+            pc.ontrack = (event) => {
+                if (event.streams && event.streams[0]) {
+                    remoteVideo.srcObject = event.streams[0];
+                }
+            };
+
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.send(JSON.stringify({
+                        type: "ice",
+                        target: targetUsername,
+                        candidate: event.candidate
+                    }));
+                }
+            };
+
+            socket.onmessage = async (e) => {
+                const data = JSON.parse(e.data);
+                if (data.type === "offer") {
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+                    socket.send(JSON.stringify({
+                        type: "answer",
+                        target: targetUsername,
+                        answer
+                    }));
+                } else if (data.type === "answer") {
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                } else if (data.type === "ice") {
+                    if (data.candidate) {
+                        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    }
+                }
+            };
+
+            socket.onopen = async () => {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                socket.send(JSON.stringify({
+                    type: "offer",
+                    target: targetUsername,
+                    offer
+                }));
+            };
+
+            socket.onerror = (e) => {
+                console.error("WebSocket Error:", e);
+                alert("خطا در اتصال به WebSocket.");
+            };
+        }
+    </script>
+</body>
+</html>
