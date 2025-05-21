@@ -1,15 +1,15 @@
 {
   "platform": "python",
   "app": "videomessage",
-  "port": 80,
+  "port": 8000,
   "build": {
     "installCommand": "pip install -r requirements.txt",
-    "startCommand": "daphne -b 0.0.0.0 -p 80 videomessage.asgi:application"
+    "startCommand": "daphne -b 0.0.0.0 -p 8000 VideoChat.asgi:application"
   },
   "disks": [],
   "env": {
-    "DJANGO_SETTINGS_MODULE": "videomessage.settings",
-    "REDIS_HOST": "videomessagesql",
+    "DJANGO_SETTINGS_MODULE": "VideoChat.settings",
+    "REDIS_HOST": "correct-redis-host-from-liara",
     "REDIS_PORT": "6379",
     "REDIS_PASSWORD": "TrZYu16R5wM8Z5hYdojJ96C6"
   }
