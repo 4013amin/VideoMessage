@@ -1,0 +1,16 @@
+{
+  "platform": "python",
+  "app": "videomessage",
+  "port": 80,
+  "build": {
+    "installCommand": "pip install -r requirements.txt",
+    "startCommand": "daphne -b 0.0.0.0 -p 80 videomessage.asgi:application"
+  },
+  "disks": [],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "videomessage.settings",
+    "REDIS_HOST": "videomessagesql",
+    "REDIS_PORT": "6379",
+    "REDIS_PASSWORD": "TrZYu16R5wM8Z5hYdojJ96C6"
+  }
+}

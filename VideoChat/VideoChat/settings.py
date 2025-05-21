@@ -25,14 +25,16 @@ INSTALLED_APPS = [
 ]
 
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [{
+                "address": (os.getenv("REDIS_HOST", "localhost"), int(os.getenv("REDIS_PORT", 6379))),
+                "password": os.getenv("REDIS_PASSWORD", None),
+            }],
         },
     },
 }
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
