@@ -28,12 +28,11 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [
-                "redis://:TrZYu16R5wM8Z5hYdojJ96C6@videomessagesql:6379/0"
-            ]
+            "hosts": [("127.0.0.1", 6379)]
         },
     },
 }
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
