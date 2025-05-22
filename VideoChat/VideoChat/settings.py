@@ -28,13 +28,13 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [{
-                "address": (os.getenv("REDIS_HOST", "localhost"), int(os.getenv("REDIS_PORT", 6379))),
-                "password": os.getenv("REDIS_PASSWORD", None),
-            }],
+            "hosts": [
+                f"redis://:{os.getenv('REDIS_PASSWORD', '')}@{os.getenv('REDIS_HOST', 'localhost')}:{os.getenv('REDIS_PORT', 6379)}"
+            ],
         },
     },
 }
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
