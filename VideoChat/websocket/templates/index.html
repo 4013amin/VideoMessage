@@ -1,66 +1,69 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>تماس تصویری WebRTC</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"/>
-  <style>
-    body {
-      font-family: 'Vazir', sans-serif;
-      padding: 20px;
-      direction: rtl;
-      background-color: #f0f2f5;
-    }
-    video {
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      margin-top: 10px;
-      width: 100%;
-      max-width: 320px;
-    }
-    .video-container {
-      margin-bottom: 20px;
-    }
-    .form-control {
-      direction: ltr;
-      text-align: left;
-    }
-  </style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>تماس تصویری WebRTC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            font-family: 'Vazir', sans-serif;
+            padding: 20px;
+            direction: rtl;
+            background-color: #f0f2f5;
+        }
+
+        video {
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .video-container {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            direction: ltr;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
+<div class="container">
     <h2 class="text-center mb-4">تماس تصویری بین دو کاربر</h2>
 
     <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="myUsername" class="form-label">نام کاربری من:</label>
-        <input id="myUsername" class="form-control" placeholder="مثلاً ali123"/>
-      </div>
-      <div class="col-md-6">
-        <label for="targetUsername" class="form-label">نام کاربری مقصد:</label>
-        <input id="targetUsername" class="form-control" placeholder="مثلاً sara456"/>
-      </div>
+        <div class="col-md-6">
+            <label for="myUsername" class="form-label">نام کاربری من:</label>
+            <input id="myUsername" class="form-control" placeholder="مثلاً ali123"/>
+        </div>
+        <div class="col-md-6">
+            <label for="targetUsername" class="form-label">نام کاربری مقصد:</label>
+            <input id="targetUsername" class="form-control" placeholder="مثلاً sara456"/>
+        </div>
     </div>
 
     <div class="text-center">
-      <button onclick="startCall()" class="btn btn-primary">شروع تماس</button>
-      <button onclick="startRandomCall()" class="btn btn-success mt-2">تماس تصویری رندوم</button>
+        <button onclick="startCall()" class="btn btn-primary">شروع تماس</button>
+        <button onclick="startRandomCall()" class="btn btn-success mt-2">تماس تصویری رندوم</button>
     </div>
 
     <div class="row mt-4">
-      <div class="col-md-6 video-container">
-        <h5>ویدیو من:</h5>
-        <video id="localVideo" autoplay muted playsinline></video>
-      </div>
-      <div class="col-md-6 video-container">
-        <h5>ویدیو طرف مقابل:</h5>
-        <video id="remoteVideo" autoplay playsinline></video>
-      </div>
+        <div class="col-md-6 video-container">
+            <h5>ویدیو من:</h5>
+            <video id="localVideo" autoplay muted playsinline></video>
+        </div>
+        <div class="col-md-6 video-container">
+            <h5>ویدیو طرف مقابل:</h5>
+            <video id="remoteVideo" autoplay playsinline></video>
+        </div>
     </div>
-  </div>
+</div>
 
-  <script>
+<script>
     const localVideo = document.getElementById("localVideo");
     const remoteVideo = document.getElementById("remoteVideo");
     const myUsernameInput = document.getElementById("myUsername");
@@ -71,127 +74,127 @@
     let socket;
 
     window.onload = async () => {
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        localVideo.srcObject = localStream;
-      } catch (error) {
-        console.error("خطا در دسترسی به دوربین/میکروفون:", error);
-        alert("لطفاً اجازه دسترسی به دوربین و میکروفون را بدهید.");
-      }
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            localVideo.srcObject = localStream;
+        } catch (error) {
+            console.error("خطا در دسترسی به دوربین/میکروفون:", error);
+            alert("لطفاً اجازه دسترسی به دوربین و میکروفون را بدهید.");
+        }
     };
 
     async function startCall() {
-      const myUsername = myUsernameInput.value.trim();
-      const targetUsername = targetUsernameInput.value.trim();
-      if (!myUsername || !targetUsername) {
-        alert("هر دو نام کاربری را وارد کنید.");
-        return;
-      }
-      setupWebSocketAndCall(myUsername, targetUsername, false);
+        const myUsername = myUsernameInput.value.trim();
+        const targetUsername = targetUsernameInput.value.trim();
+        if (!myUsername || !targetUsername) {
+            alert("هر دو نام کاربری را وارد کنید.");
+            return;
+        }
+        setupWebSocketAndCall(myUsername, targetUsername, false);
     }
 
     async function startRandomCall() {
-      const myUsername = myUsernameInput.value.trim();
-      if (!myUsername) {
-        alert("نام کاربری خود را وارد کنید.");
-        return;
-      }
-      setupWebSocketAndCall(myUsername, null, true);
+        const myUsername = myUsernameInput.value.trim();
+        if (!myUsername) {
+            alert("نام کاربری خود را وارد کنید.");
+            return;
+        }
+        setupWebSocketAndCall(myUsername, null, true);
     }
 
     async function setupWebSocketAndCall(myUsername, targetUsername, isRandom) {
-      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-      const wsUrl = `${protocol}://${window.location.host}/ws/video/${myUsername}/`;
-      socket = new WebSocket(wsUrl);
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsUrl = `${protocol}://${window.location.host}/ws/video/${myUsername}/`;
+        socket = new WebSocket(wsUrl);
 
-      pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-      });
+        pc = new RTCPeerConnection({
+            iceServers: [{urls: "stun:stun.l.google.com:19302"}]
+        });
 
-      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
-      pc.ontrack = (event) => {
-        if (event.streams && event.streams[0]) {
-          remoteVideo.srcObject = event.streams[0];
-        }
-      };
+        pc.ontrack = (event) => {
+            if (event.streams && event.streams[0]) {
+                remoteVideo.srcObject = event.streams[0];
+            }
+        };
 
-      pc.onicecandidate = (event) => {
-        if (event.candidate && targetUsernameInput.value) {
-          socket.send(JSON.stringify({
-            type: "ice",
-            target: targetUsernameInput.value,
-            candidate: event.candidate
-          }));
-        }
-      };
+        pc.onicecandidate = (event) => {
+            if (event.candidate && targetUsernameInput.value) {
+                socket.send(JSON.stringify({
+                    type: "ice",
+                    target: targetUsernameInput.value,
+                    candidate: event.candidate
+                }));
+            }
+        };
 
-      socket.onmessage = async (event) => {
-        const data = JSON.parse(event.data);
+        socket.onmessage = async (event) => {
+            const data = JSON.parse(event.data);
 
-        if (data.type === "random_user") {
-          if (!data.target) {
-            alert("هیچ کاربر آنلاینی برای تماس رندوم وجود ندارد.");
-            socket.close();
-            return;
-          }
-          targetUsername = data.target;
-          targetUsernameInput.value = targetUsername;
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          socket.send(JSON.stringify({
-            type: "offer",
-            target: targetUsername,
-            offer
-          }));
-        }
+            if (data.type === "random_user") {
+                if (!data.target) {
+                    alert("هیچ کاربر آنلاینی برای تماس رندوم وجود ندارد.");
+                    socket.close();
+                    return;
+                }
+                targetUsername = data.target;
+                targetUsernameInput.value = targetUsername;
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                socket.send(JSON.stringify({
+                    type: "offer",
+                    target: targetUsername,
+                    offer
+                }));
+            }
 
-        if (data.type === "offer") {
-          targetUsernameInput.value = myUsername; // برعکس چون او تماس گرفته
-          await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          socket.send(JSON.stringify({
-            type: "answer",
-            target: data.sender || myUsername,
-            answer
-          }));
-        }
+            if (data.type === "offer") {
+                targetUsernameInput.value = myUsername; // برعکس چون او تماس گرفته
+                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                socket.send(JSON.stringify({
+                    type: "answer",
+                    target: data.sender || myUsername,
+                    answer
+                }));
+            }
 
-        if (data.type === "answer") {
-          await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-        }
+            if (data.type === "answer") {
+                await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+            }
 
-        if (data.type === "ice" && data.candidate) {
-          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-        }
-      };
+            if (data.type === "ice" && data.candidate) {
+                await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+        };
 
-      socket.onopen = async () => {
-        if (isRandom) {
-          socket.send(JSON.stringify({ type: "get_random_user" }));
-        } else {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          socket.send(JSON.stringify({
-            type: "offer",
-            target: targetUsername,
-            offer
-          }));
-        }
-      };
+        socket.onopen = async () => {
+            if (isRandom) {
+                socket.send(JSON.stringify({type: "get_random_user"}));
+            } else {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                socket.send(JSON.stringify({
+                    type: "offer",
+                    target: targetUsername,
+                    offer
+                }));
+            }
+        };
 
-      socket.onerror = (e) => {
-        console.error("WebSocket error:", e);
-        alert("خطا در اتصال WebSocket.");
-      };
+        socket.onerror = (e) => {
+            console.error("WebSocket error:", e);
+            alert("خطا در اتصال WebSocket.");
+        };
 
-      socket.onclose = () => {
-        console.log("اتصال WebSocket بسته شد.");
-      };
+        socket.onclose = () => {
+            console.log("اتصال WebSocket بسته شد.");
+        };
     }
-  </script>
+</script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,16 +1,17 @@
-import os
-from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
 from django.core.asgi import get_asgi_application
-import websocket.routing  # اصلاح نام اپلیکیشن
+from websocket.routing import websocket_urlpatterns
+
+import os
+import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'VideoChat.settings')
+django.setup()
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
-        URLRouter(
-            websocket.routing.websocket_urlpatterns
-        )
+        URLRouter(websocket_urlpatterns)
     ),
 })
