@@ -6,7 +6,6 @@ import logging
 logger = logging.getLogger(__name__)
 online_users = set()
 
-
 class VideoCallConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.username = self.scope["url_route"]["kwargs"]["username"]
