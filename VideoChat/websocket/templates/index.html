@@ -58,68 +58,112 @@
     const myUsernameInput = document.getElementById("myUsername");
     const targetUsernameInput = document.getElementById("targetUsername");
 
-    let localStream, pc, socket, myUsername, targetUsername;
+    let localStream = null;
+    let pc = null;
+    let socket = null;
+    let myUsername = '';
+    let targetUsername = '';
 
     async function getMedia() {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        localVideo.srcObject = localStream;
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localVideo.srcObject = localStream;
+        } catch (err) {
+            console.error("خطا در دریافت دسترسی به ویدیو:", err);
+            alert("دسترسی به دوربین یا میکروفن امکان‌پذیر نیست.");
+        }
     }
 
     async function startCall() {
         myUsername = myUsernameInput.value.trim();
         targetUsername = targetUsernameInput.value.trim();
         if (!myUsername || !targetUsername) return alert("نام کاربری‌ها را وارد کنید");
-        setupConnection(false);
+        await setupConnection(false);
     }
 
     async function startRandomCall() {
         myUsername = myUsernameInput.value.trim();
         if (!myUsername) return alert("نام کاربری خود را وارد کنید");
-        setupConnection(true);
+        await setupConnection(true);
     }
 
     async function setupConnection(isRandom) {
         await getMedia();
+
         socket = new WebSocket(`ws://${window.location.host}/ws/video/${myUsername}/`);
 
-        pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        socket.onerror = (e) => {
+            console.error("خطا در WebSocket:", e);
+            alert("خطا در ارتباط با سرور WebSocket.");
+        };
 
-        pc.onicecandidate = e => {
-            if (e.candidate && targetUsername) {
-                socket.send(JSON.stringify({ type: 'ice', target: targetUsername, candidate: e.candidate }));
+        socket.onclose = () => {
+            console.warn("اتصال WebSocket بسته شد.");
+        };
+
+        pc = new RTCPeerConnection({
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" }
+            ]
+        });
+
+        localStream.getTracks().forEach(track => {
+            pc.addTrack(track, localStream);
+        });
+
+        pc.onicecandidate = (event) => {
+            if (event.candidate && targetUsername) {
+                socket.send(JSON.stringify({
+                    type: 'ice',
+                    target: targetUsername,
+                    candidate: event.candidate
+                }));
             }
         };
 
-        pc.ontrack = e => {
-            if (e.streams[0]) remoteVideo.srcObject = e.streams[0];
+        pc.ontrack = (event) => {
+            if (event.streams && event.streams[0]) {
+                remoteVideo.srcObject = event.streams[0];
+            }
         };
 
-        socket.onmessage = async e => {
-            const data = JSON.parse(e.data);
-            if (data.type === 'random_user') {
-                if (!data.target) return alert("کاربر رندومی موجود نیست.");
-                targetUsername = data.target;
-                targetUsernameInput.value = targetUsername;
-                const offer = await pc.createOffer();
-                await pc.setLocalDescription(offer);
-                socket.send(JSON.stringify({ type: "offer", target: targetUsername, offer }));
-            }
+        socket.onmessage = async (event) => {
+            const data = JSON.parse(event.data);
 
-            if (data.type === 'offer') {
-                targetUsername = data.sender;
-                await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-                const answer = await pc.createAnswer();
-                await pc.setLocalDescription(answer);
-                socket.send(JSON.stringify({ type: 'answer', target: data.sender, answer }));
-            }
+            switch (data.type) {
+                case 'random_user':
+                    if (!data.target) return alert("کاربری برای تماس رندوم پیدا نشد.");
+                    targetUsername = data.target;
+                    targetUsernameInput.value = targetUsername;
+                    const offer = await pc.createOffer();
+                    await pc.setLocalDescription(offer);
+                    socket.send(JSON.stringify({ type: 'offer', target: targetUsername, offer }));
+                    break;
 
-            if (data.type === 'answer') {
-                await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-            }
+                case 'offer':
+                    targetUsername = data.sender;
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+                    socket.send(JSON.stringify({ type: 'answer', target: data.sender, answer }));
+                    break;
 
-            if (data.type === 'ice') {
-                if (data.candidate) await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                case 'answer':
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+                    break;
+
+                case 'ice':
+                    if (data.candidate) {
+                        try {
+                            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                        } catch (err) {
+                            console.error("خطا در افزودن ICE:", err);
+                        }
+                    }
+                    break;
+
+                default:
+                    console.warn("پیام ناشناخته:", data);
             }
         };
 
