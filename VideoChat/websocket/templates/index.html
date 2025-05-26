@@ -95,7 +95,7 @@
     async function connect(isRandom) {
         await getMedia();
 
-        const socket = new WebSocket("wss://videomessage.liara.run/ws/video/Amin/");
+        const socket = new WebSocket("wss://videomessage.liara.run/");
 
         pc = new RTCPeerConnection({
             iceServers: [
