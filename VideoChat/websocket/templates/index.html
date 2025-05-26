@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>تماس تصویری WebRTC</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"/>
     <style>
         body {
             direction: rtl;
@@ -32,11 +32,11 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <label>نام کاربری من:</label>
-            <input id="myUsername" class="form-control" placeholder="مثلاً ali" />
+            <input id="myUsername" class="form-control" placeholder="مثلاً ali"/>
         </div>
         <div class="col-md-6">
             <label>نام کاربری مقصد:</label>
-            <input id="targetUsername" class="form-control" placeholder="مثلاً sara" />
+            <input id="targetUsername" class="form-control" placeholder="مثلاً sara"/>
         </div>
     </div>
 
@@ -71,7 +71,7 @@
 
     async function getMedia() {
         try {
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
             localVideo.srcObject = localStream;
         } catch (err) {
             console.error("دریافت رسانه شکست خورد:", err);
@@ -95,11 +95,11 @@
     async function connect(isRandom) {
         await getMedia();
 
-        socket = new WebSocket(`ws://${window.location.host}/ws/video/${myUsername}/`);
+        const socket = new WebSocket("wss://videomessage.liara.run/ws/video/Amin/");
 
         pc = new RTCPeerConnection({
             iceServers: [
-                { urls: "stun:stun.l.google.com:19302" }
+                {urls: "stun:stun.l.google.com:19302"}
             ]
         });
 
@@ -137,7 +137,7 @@
                     targetUsernameInput.value = targetUsername;
                     const offer = await pc.createOffer();
                     await pc.setLocalDescription(offer);
-                    socket.send(JSON.stringify({ type: 'offer', target: targetUsername, offer }));
+                    socket.send(JSON.stringify({type: 'offer', target: targetUsername, offer}));
                     break;
 
                 case 'offer':
@@ -145,7 +145,7 @@
                     await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
                     const answer = await pc.createAnswer();
                     await pc.setLocalDescription(answer);
-                    socket.send(JSON.stringify({ type: 'answer', target: data.sender, answer }));
+                    socket.send(JSON.stringify({type: 'answer', target: data.sender, answer}));
                     break;
 
                 case 'answer':
@@ -169,11 +169,11 @@
 
         socket.onopen = async () => {
             if (isRandom) {
-                socket.send(JSON.stringify({ type: 'get_random_user' }));
+                socket.send(JSON.stringify({type: 'get_random_user'}));
             } else {
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
-                socket.send(JSON.stringify({ type: 'offer', target: targetUsername, offer }));
+                socket.send(JSON.stringify({type: 'offer', target: targetUsername, offer}));
             }
         };
 
