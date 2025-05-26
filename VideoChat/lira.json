@@ -12,6 +12,6 @@
     "DJANGO_DEBUG": "False",
     "REDIS_HOST": "videomessagesql",
     "REDIS_PORT": "6379",
-    "REDIS_PASSWORD": "TrZYu16R5wM8Z5hYdojJ96C6"
+    "REDIS_PASSWORD": "0QWDLrAIA4s2uiNS9czsmyd4"
   }
 }
