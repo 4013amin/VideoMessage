@@ -1,18 +1,19 @@
-"""
-Django settings for VideoChat project.
-"""
-
 from pathlib import Path
 import os
 
+# مسیر اصلی پروژه
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# کلید مخفی (در تولید از متغیر محیطی استفاده کنید)
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-rj7opk%p)4p6du4g8mqqm7_t28@0ht4isgbd7yer$%hw(*_!pf')
 
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+# حالت دیباگ (برای تولید False باشد)
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
+# اجازه دادن به همه هاست‌ها (برای تولید می‌توانید دامنه خاص را تنظیم کنید)
 ALLOWED_HOSTS = ['*']
 
+# اپلیکیشن‌های نصب‌شده
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -20,32 +21,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'websocket',
-    'channels',
+    'websocket',  # اپلیکیشن WebSocket
+    'channels',  # برای پشتیبانی از WebSocket
 ]
 
-REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
-REDIS_PORT = os.environ.get('REDIS_PORT', '6379')
-REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
-
-try:
-    REDIS_PORT = int(REDIS_PORT)
-except (TypeError, ValueError):
-    REDIS_PORT = 6379
-
+# تنظیمات Redis برای Channels
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [(
-                os.environ.get("REDIS_HOST", "localhost"),
-                int(os.environ.get("REDIS_PORT", 6379)),
-                os.environ.get("REDIS_PASSWORD", "")
-            )],
+            "hosts": [os.environ.get("REDIS_URL", "redis://:HZZAo6Lqgna6Vm07240VN7u1@videochat:6379/0")],
         },
     },
 }
 
+# میان‌افزارها
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -56,8 +46,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# تنظیمات URL
 ROOT_URLCONF = 'VideoChat.urls'
 
+# تنظیمات قالب‌ها
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -74,9 +66,11 @@ TEMPLATES = [
     },
 ]
 
+# تنظیمات WSGI و ASGI
 WSGI_APPLICATION = 'VideoChat.wsgi.application'
 ASGI_APPLICATION = 'VideoChat.asgi.application'
 
+# تنظیمات دیتابیس (SQLite برای سادگی)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -84,6 +78,7 @@ DATABASES = {
     }
 }
 
+# اعتبارسنجی رمز عبور
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -99,18 +94,24 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# تنظیمات زبان و زمان
 LANGUAGE_CODE = 'fa-ir'
 TIME_ZONE = 'Asia/Tehran'
 USE_I18N = True
 USE_TZ = True
 
+# تنظیمات فایل‌های استاتیک
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# تنظیمات فایل‌های رسانه
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# نوع فیلد خودکار
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# تنظیمات امنیتی
 SECURE_SSL_REDIRECT = not DEBUG
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

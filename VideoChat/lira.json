@@ -9,8 +9,6 @@
   "env": {
     "DJANGO_SETTINGS_MODULE": "VideoChat.settings",
     "DJANGO_DEBUG": "False",
-    "REDIS_HOST": "videochat",
-    "REDIS_PORT": "6379",
-    "REDIS_PASSWORD": "HZZAo6Lqgna6Vm07240VN7u1"
+    "REDIS_URL": "redis://:HZZAo6Lqgna6Vm07240VN7u1@videochat:6379/0"
   }
 }

@@ -4,7 +4,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 online_users = {}
 
-
 class VideoCallConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.username = self.scope['url_route']['kwargs']['username']

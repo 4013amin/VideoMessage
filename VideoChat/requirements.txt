@@ -27,3 +27,10 @@ txaio==23.1.1
 typing_extensions==4.13.2
 uvicorn==0.34.2
 zope.interface==7.2
+
+
+django==4.2
+channels==4.0.0
+channels-redis==4.0.0
+daphne==4.0.0
+redis==4.5.4
