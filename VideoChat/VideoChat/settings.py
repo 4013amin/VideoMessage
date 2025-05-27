@@ -4,13 +4,13 @@ import os
 # مسیر اصلی پروژه
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# کلید مخفی (در تولید از متغیر محیطی استفاده کنید)
+# کلید مخفی
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-rj7opk%p)4p6du4g8mqqm7_t28@0ht4isgbd7yer$%hw(*_!pf')
 
-# حالت دیباگ (برای تولید False باشد)
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+# حالت دیباگ
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-# اجازه دادن به همه هاست‌ها (برای تولید می‌توانید دامنه خاص را تنظیم کنید)
+# هاست‌های مجاز
 ALLOWED_HOSTS = ['*']
 
 # اپلیکیشن‌های نصب‌شده
@@ -21,8 +21,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'websocket',  # اپلیکیشن WebSocket
-    'channels',  # برای پشتیبانی از WebSocket
+    'websocket',
+    'channels',
 ]
 
 # تنظیمات Redis برای Channels
@@ -70,7 +70,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'VideoChat.wsgi.application'
 ASGI_APPLICATION = 'VideoChat.asgi.application'
 
-# تنظیمات دیتابیس (SQLite برای سادگی)
+# تنظیمات دیتابیس
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -112,6 +112,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # نوع فیلد خودکار
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# تنظیمات امنیتی
-SECURE_SSL_REDIRECT = not DEBUG
+# تنظیمات امنیتی (برای تست غیرفعال شده)
+SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

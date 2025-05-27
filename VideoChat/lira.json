@@ -8,7 +8,7 @@
   },
   "env": {
     "DJANGO_SETTINGS_MODULE": "VideoChat.settings",
-    "DJANGO_DEBUG": "False",
+    "DJANGO_DEBUG": "True",
     "REDIS_URL": "redis://:HZZAo6Lqgna6Vm07240VN7u1@videochat:6379/0"
   }
 }
