@@ -2,25 +2,25 @@
 <html lang="fa">
 <head>
     <meta charset="UTF-8"/>
-    <title>تماس تصویری WebRTC</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="وب اپلیکیشن تماس تصویری با استفاده از WebRTC و WebSocket برای ارتباط مستقیم بین کاربران.">
+    <title>تماس تصویری WebRTC | ارتباط ویدیویی مستقیم</title>
     <link rel="icon" href="/static/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"/>
     <style>
         body {
             direction: rtl;
-            font-family: sans-serif;
+            font-family: 'Vazirmatn', sans-serif;
             padding: 20px;
-            background: #f0f0f0;
+            background-color: #f8f9fa;
         }
-
         video {
             width: 100%;
-            max-width: 320px;
+            max-width: 100%;
             border-radius: 10px;
-            border: 2px solid #ccc;
+            border: 2px solid #dee2e6;
             margin-top: 15px;
         }
-
         label {
             font-weight: bold;
         }
@@ -31,34 +31,35 @@
     <h2 class="text-center mb-4">تماس تصویری WebRTC</h2>
 
     <div class="row mb-3">
-        <div class="col-md-6">
-            <label>نام کاربری من:</label>
-            <input id="myUsername" class="form-control" placeholder="مثلاً ali"/>
+        <div class="col-md-6 mb-3">
+            <label for="myUsername">نام کاربری من:</label>
+            <input id="myUsername" class="form-control" placeholder="مثلاً ali" />
         </div>
-        <div class="col-md-6">
-            <label>نام کاربری مقصد:</label>
-            <input id="targetUsername" class="form-control" placeholder="مثلاً sara"/>
+        <div class="col-md-6 mb-3">
+            <label for="targetUsername">نام کاربری مقصد:</label>
+            <input id="targetUsername" class="form-control" placeholder="مثلاً sara" />
         </div>
     </div>
 
-    <div class="text-center">
-        <button class="btn btn-primary" onclick="startCall()">شروع تماس</button>
-        <button class="btn btn-success mt-2" onclick="startRandomCall()">تماس رندوم</button>
+    <div class="text-center mb-4">
+        <button class="btn btn-primary me-2" onclick="startCall()">شروع تماس</button>
+        <button class="btn btn-success" onclick="startRandomCall()">تماس رندوم</button>
     </div>
 
     <div class="row mt-4">
-        <div class="col-md-6">
-            <h5>ویدیو من:</h5>
+        <div class="col-md-6 mb-3">
+            <h5 class="text-center">ویدیو من:</h5>
             <video id="localVideo" autoplay muted playsinline></video>
         </div>
-        <div class="col-md-6">
-            <h5>ویدیو طرف مقابل:</h5>
+        <div class="col-md-6 mb-3">
+            <h5 class="text-center">ویدیو طرف مقابل:</h5>
             <video id="remoteVideo" autoplay playsinline></video>
         </div>
     </div>
 </div>
 
 <script>
+    // عناصر HTML
     const localVideo = document.getElementById("localVideo");
     const remoteVideo = document.getElementById("remoteVideo");
     const myUsernameInput = document.getElementById("myUsername");
@@ -70,6 +71,7 @@
     let myUsername = '';
     let targetUsername = '';
 
+    // گرفتن مجوز ویدیویی و صوتی
     async function getMedia() {
         try {
             localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
@@ -80,23 +82,30 @@
         }
     }
 
+    // شروع تماس با کاربر مشخص
     async function startCall() {
         myUsername = myUsernameInput.value.trim();
         targetUsername = targetUsernameInput.value.trim();
-        if (!myUsername || !targetUsername) return alert("هر دو نام کاربری را وارد کنید");
+        if (!myUsername || !targetUsername) {
+            alert("هر دو نام کاربری را وارد کنید");
+            return;
+        }
         await connect(false);
     }
 
+    // شروع تماس رندوم
     async function startRandomCall() {
         myUsername = myUsernameInput.value.trim();
-        if (!myUsername) return alert("نام کاربری خود را وارد کنید");
+        if (!myUsername) {
+            alert("نام کاربری خود را وارد کنید");
+            return;
+        }
         await connect(true);
     }
 
+    // برقراری اتصال WebSocket و WebRTC
     async function connect(isRandom) {
         await getMedia();
-
-        const socket = new WebSocket(`wss://videomessage.liara.run/ws/video/${myUsername}/`);
 
         pc = new RTCPeerConnection({
             iceServers: [
@@ -104,17 +113,18 @@
             ]
         });
 
-        localStream.getTracks().forEach(track => {
-            pc.addTrack(track, localStream);
-        });
+        // اضافه کردن ترک‌ها به PeerConnection
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
-        pc.ontrack = (event) => {
-            if (remoteVideo.srcObject !== event.streams[0]) {
+        // دریافت استریم ویدیویی طرف مقابل
+        pc.ontrack = event => {
+            if (!remoteVideo.srcObject) {
                 remoteVideo.srcObject = event.streams[0];
             }
         };
 
-        pc.onicecandidate = (event) => {
+        // ارسال ICE candidate به طرف مقابل
+        pc.onicecandidate = event => {
             if (event.candidate && targetUsername) {
                 socket.send(JSON.stringify({
                     type: 'ice',
@@ -124,12 +134,34 @@
             }
         };
 
+        // اتصال به سرور WebSocket
+       socket = new WebSocket(`wss://videomessage.liara.run/ws/video/${myUsername}/`);
+
+        socket.onopen = async () => {
+            if (isRandom) {
+                socket.send(JSON.stringify({type: 'get_random_user'}));
+            } else {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                socket.send(JSON.stringify({type: 'offer', target: targetUsername, offer}));
+            }
+        };
+
+        // دریافت پیام‌ها از سرور
         socket.onmessage = async (event) => {
             const data = JSON.parse(event.data);
 
+            if (!data || !data.type) {
+                console.warn("پیام نامعتبر:", event.data);
+                return;
+            }
+
             switch (data.type) {
                 case 'random_user':
-                    if (!data.target) return alert("کاربری برای تماس رندوم پیدا نشد.");
+                    if (!data.target) {
+                        alert("کاربری برای تماس رندوم پیدا نشد.");
+                        return;
+                    }
                     targetUsername = data.target;
                     targetUsernameInput.value = targetUsername;
                     const offer = await pc.createOffer();
@@ -164,23 +196,13 @@
             }
         };
 
-        socket.onopen = async () => {
-            if (isRandom) {
-                socket.send(JSON.stringify({type: 'get_random_user'}));
-            } else {
-                const offer = await pc.createOffer();
-                await pc.setLocalDescription(offer);
-                socket.send(JSON.stringify({type: 'offer', target: targetUsername, offer}));
-            }
-        };
-
         socket.onerror = (e) => {
-            console.error("خطا در WebSocket:", e);
+            console.error("WebSocket Error:", e);
             alert("خطا در اتصال به سرور WebSocket.");
         };
 
         socket.onclose = () => {
-            console.warn("WebSocket بسته شد.");
+            console.warn("اتصال WebSocket بسته شد.");
         };
     }
 

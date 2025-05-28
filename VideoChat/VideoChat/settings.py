@@ -66,6 +66,30 @@ TEMPLATES = [
     },
 ]
 
+
+#LOG 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'video_call': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
+    },
+}
+
+
+
 # تنظیمات WSGI و ASGI
 WSGI_APPLICATION = 'VideoChat.wsgi.application'
 ASGI_APPLICATION = 'VideoChat.asgi.application'
