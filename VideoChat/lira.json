@@ -10,6 +10,23 @@
   "env": {
     "DJANGO_SETTINGS_MODULE": "VideoChat.settings",
     "DJANGO_DEBUG": "True",
-    "REDIS_URL": "redis://:IQjUStiwQ6ejdUBYpLJ3ILwE@videomessagesql:6379/0"
-  }
-}
+    "REDIS_URL": "redis://:IQjuStiwQe6jdUBYpLJ3IlwE@videomessagesql:6379/0",
+    "TZ": "Asia/Tehran"
+  },
+  "healthCheck": {
+    "path": "/health/",
+    "interval": 30,
+    "timeout": 5,
+    "retries": 3
+  },
+  "disks": [
+    {
+      "name": "storage",
+      "mountTo": "media"
+    },
+    {
+      "name": "static",
+      "mountTo": "staticfiles"
+    }
+  ]
+} 
