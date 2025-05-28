@@ -25,12 +25,14 @@ INSTALLED_APPS = [
     'channels',
 ]
 
-# تنظیمات Redis برای Channels
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get("REDIS_URL", "redis://:HZZAo6Lqgna6Vm07240VN7u1@videochat:6379/0")],
+            "hosts": [REDIS_URL],
         },
     },
 }

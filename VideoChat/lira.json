@@ -2,6 +2,7 @@
   "platform": "python",
   "app": "videomessage",
   "port": 80,
+  "asgi": true,
   "build": {
     "installCommand": "pip install -r requirements.txt",
     "startCommand": "daphne -b 0.0.0.0 -p $PORT VideoChat.asgi:application"
@@ -9,6 +10,6 @@
   "env": {
     "DJANGO_SETTINGS_MODULE": "VideoChat.settings",
     "DJANGO_DEBUG": "True",
-    "REDIS_URL": "redis://:HZZAo6Lqgna6Vm07240VN7u1@videochat:6379/0"
+    "REDIS_URL": "redis://:IQjUStiwQ6ejdUBYpLJ3ILwE@videomessagesql:6379/0"
   }
 }
