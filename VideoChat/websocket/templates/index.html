@@ -135,7 +135,7 @@
         };
 
         // اتصال به سرور WebSocket
-        socket = new WebSocket(`ws://videomessage.liara.run/ws/video/${myUsername}/`);
+        socket = new WebSocket(`wss://videomessage.liara.run/ws/video/${myUsername}/`);
         
 
         socket.onopen = async () => {

@@ -11,7 +11,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-rj7opk%p)4p6du
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # هاست‌های مجاز
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['videomessage.liara.run', 'localhost', '127.0.0.1']
 
 # اپلیکیشن‌های نصب‌شده
 INSTALLED_APPS = [
@@ -36,6 +36,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
 
 # میان‌افزارها
 MIDDLEWARE = [
@@ -127,9 +128,11 @@ USE_I18N = True
 USE_TZ = True
 
 # تنظیمات فایل‌های استاتیک
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 # تنظیمات فایل‌های رسانه
 MEDIA_URL = '/media/'
