@@ -16,6 +16,7 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
+        logger.info(f"[ACCEPT] WebSocket accepted for {self.username}")
 
     async def disconnect(self, close_code):
         if self.username in online_users:
