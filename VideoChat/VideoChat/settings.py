@@ -26,12 +26,11 @@ INSTALLED_APPS = [
 ]
 
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://:IQjuStiwQe6jdUBYpLJ3IlwE@videomessagesql:6379/0")
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [REDIS_URL],
+            "hosts": [("localhost", 6379)],
         },
     },
 }
