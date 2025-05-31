@@ -4,61 +4,91 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="وب اپلیکیشن تماس تصویری با استفاده از WebRTC و WebSocket برای ارتباط مستقیم بین کاربران.">
-    <title>تماس تصویری WebRTC | ارتباط ویدیویی مستقیم</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet"/>
+    <title>تماس تصویری WebRTC | تماس ویدیویی آنلاین</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            direction: rtl;
             font-family: 'Vazirmatn', sans-serif;
-            padding: 20px;
-            background-color: #f8f9fa;
+            direction: rtl;
+            background-color: #f0f2f5;
         }
+
+        .card-custom {
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            background-color: #ffffff;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
         video {
             width: 100%;
-            max-width: 100%;
-            border-radius: 10px;
-            border: 2px solid #dee2e6;
-            margin-top: 15px;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
         }
+
         label {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .btn-primary {
+            background-color: #4a69bd;
+            border: none;
+        }
+
+        .btn-success {
+            background-color: #38ada9;
+            border: none;
+        }
+
+        .video-title {
+            background-color: #f1f1f1;
+            padding: 5px 10px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 10px;
             font-weight: bold;
         }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h2 class="text-center mb-4">تماس تصویری WebRTC</h2>
+    <div class="card-custom">
+        <h2 class="text-center mb-4">✨ تماس تصویری WebRTC</h2>
 
-    <div class="row mb-3">
-        <div class="col-md-6 mb-3">
-            <label for="myUsername">نام کاربری من:</label>
-            <input id="myUsername" class="form-control" placeholder="مثلاً ali" />
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label for="myUsername">نام کاربری من:</label>
+                <input id="myUsername" class="form-control" placeholder="مثلاً ali" />
+            </div>
+            <div class="col-md-6">
+                <label for="targetUsername">نام کاربری مقصد:</label>
+                <input id="targetUsername" class="form-control" placeholder="مثلاً sara" />
+            </div>
         </div>
-        <div class="col-md-6 mb-3">
-            <label for="targetUsername">نام کاربری مقصد:</label>
-            <input id="targetUsername" class="form-control" placeholder="مثلاً sara" />
-        </div>
-    </div>
 
-    <div class="text-center mb-4">
-        <button class="btn btn-primary me-2" onclick="startCall()">شروع تماس</button>
-        <button class="btn btn-success" onclick="startRandomCall()">تماس رندوم</button>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-6 mb-3">
-            <h5 class="text-center">ویدیو من:</h5>
-            <video id="localVideo" autoplay muted playsinline></video>
+        <div class="text-center mb-4">
+            <button class="btn btn-primary me-2 px-4" onclick="startCall()">🎥 شروع تماس</button>
+            <button class="btn btn-success px-4" onclick="startRandomCall()">🎲 تماس رندوم</button>
         </div>
-        <div class="col-md-6 mb-3">
-            <h5 class="text-center">ویدیو طرف مقابل:</h5>
-            <video id="remoteVideo" autoplay playsinline></video>
+
+        <div class="row mt-4">
+            <div class="col-md-6 mb-4">
+                <div class="video-title">ویدیوی من</div>
+                <video id="localVideo" autoplay muted playsinline></video>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="video-title">ویدیوی طرف مقابل</div>
+                <video id="remoteVideo" autoplay playsinline></video>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // عناصر HTML
     const localVideo = document.getElementById("localVideo");
     const remoteVideo = document.getElementById("remoteVideo");
     const myUsernameInput = document.getElementById("myUsername");
@@ -70,7 +100,6 @@
     let myUsername = '';
     let targetUsername = '';
 
-    // گرفتن مجوز ویدیویی و صوتی
     async function getMedia() {
         try {
             localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
@@ -81,7 +110,6 @@
         }
     }
 
-    // شروع تماس با کاربر مشخص
     async function startCall() {
         myUsername = myUsernameInput.value.trim();
         targetUsername = targetUsernameInput.value.trim();
@@ -92,7 +120,6 @@
         await connect(false);
     }
 
-    // شروع تماس رندوم
     async function startRandomCall() {
         myUsername = myUsernameInput.value.trim();
         if (!myUsername) {
@@ -102,7 +129,6 @@
         await connect(true);
     }
 
-    // برقراری اتصال WebSocket و WebRTC
     async function connect(isRandom) {
         await getMedia();
 
@@ -114,17 +140,14 @@
             ]
         });
 
-        // اضافه کردن ترک‌ها به PeerConnection
         localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
-        // دریافت استریم ویدیویی طرف مقابل
         pc.ontrack = event => {
             if (!remoteVideo.srcObject) {
                 remoteVideo.srcObject = event.streams[0];
             }
         };
 
-        // ارسال ICE candidate به طرف مقابل
         pc.onicecandidate = event => {
             if (event.candidate && targetUsername) {
                 socket.send(JSON.stringify({
@@ -135,8 +158,7 @@
             }
         };
 
-        // اتصال به سرور WebSocket
-        new WebSocket("wss://videomessage.liara.run")
+        socket = new WebSocket("wss://videomessage.liara.run");
 
         socket.onopen = async () => {
             console.log("WebSocket connected");
@@ -149,7 +171,6 @@
             }
         };
 
-        // دریافت پیام‌ها از سرور
         socket.onmessage = async (event) => {
             const data = JSON.parse(event.data);
 
@@ -210,5 +231,6 @@
 
     window.onload = getMedia;
 </script>
+
 </body>
 </html>
