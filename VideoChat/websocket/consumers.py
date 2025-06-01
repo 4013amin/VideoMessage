@@ -2,15 +2,24 @@ import json
 import random
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.auth import get_user
+from django_redis import get_redis_connection
 
 logger = logging.getLogger("video_call")
-online_users = {}
 
 class VideoCallConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.username = self.scope['url_route']['kwargs']['username']
+        user = await get_user(self.scope)
+        if not user.is_authenticated:
+            await self.close()
+            logger.warning("اتصال رد شد: کاربر احراز هویت نشده است.")
+            return
+
+        self.username = user.username
         self.room_group_name = f"video_{self.username}"
-        online_users[self.username] = self.channel_name
+
+        redis = get_redis_connection("default")
+        redis.hset("online_users", self.username, self.channel_name)
 
         logger.info(f"[CONNECT] User connected: {self.username} => {self.channel_name}")
 
@@ -19,10 +28,11 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         logger.info(f"[ACCEPT] WebSocket accepted for {self.username}")
 
     async def disconnect(self, close_code):
-        if self.username in online_users:
-            logger.info(f"[DISCONNECT] Removing user: {self.username}")
-            del online_users[self.username]
+        redis = get_redis_connection("default")
+        if redis.hexists("online_users", self.username):
+            redis.hdel("online_users", self.username)
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        logger.info(f"[DISCONNECT] Removing user: {self.username}")
 
     async def receive(self, text_data):
         logger.debug(f"[RECEIVE] From {self.username}: {text_data}")
@@ -39,10 +49,11 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
                 }))
             else:
                 target = data.get("target")
-                if target in online_users:
+                redis = get_redis_connection("default")
+                if redis.hexists("online_users", target):
                     data["sender"] = self.username
                     logger.info(f"[FORWARD] {self.username} -> {target}: {msg_type}")
-                    await self.channel_layer.send(online_users[target], {
+                    await self.channel_layer.send(redis.hget("online_users", target).decode(), {
                         "type": "send.sdp",
                         "data": data
                     })
@@ -56,5 +67,6 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event["data"]))
 
     def get_random_user(self, exclude):
-        candidates = [u for u in online_users if u != exclude]
+        redis = get_redis_connection("default")
+        candidates = [u.decode() for u in redis.hkeys("online_users") if u.decode() != exclude]
         return random.choice(candidates) if candidates else None

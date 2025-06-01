@@ -1,15 +1,9 @@
-from django.urls import path
-from .views import video_test_view
-from django.http import HttpResponse
-
-def health_check(request):
-    return HttpResponse("OK", status=200)
-
+from django.contrib import admin
+from django.urls import path, include
+from . import views
 
 urlpatterns = [
-    path('', video_test_view),
-    
-    path('health/', health_check, name='health_check'),
-    path('', lambda request: HttpResponse(open('templates/index.html').read(), content_type='text/html'), name='index'),
-
+    path('admin/', admin.site.urls),
+    path('auth/', include('social_django.urls', namespace='social')),
+    path('', views.video_call_view, name='video_call'),
 ]

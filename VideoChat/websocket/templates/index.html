@@ -13,7 +13,6 @@
             direction: rtl;
             background-color: #f0f2f5;
         }
-
         .card-custom {
             border-radius: 16px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
@@ -21,28 +20,23 @@
             padding: 20px;
             margin-top: 30px;
         }
-
         video {
             width: 100%;
             border-radius: 12px;
             border: 1px solid #dee2e6;
         }
-
         label {
             font-weight: bold;
             margin-bottom: 6px;
         }
-
         .btn-primary {
             background-color: #4a69bd;
             border: none;
         }
-
         .btn-success {
             background-color: #38ada9;
             border: none;
         }
-
         .video-title {
             background-color: #f1f1f1;
             padding: 5px 10px;
@@ -56,17 +50,16 @@
 <body>
 
 <div class="container">
+    {% if user.is_authenticated %}
     <div class="card-custom">
         <h2 class="text-center mb-4">✨ تماس تصویری WebRTC</h2>
+        <p>خوش آمدید، {{ user.display_name }}!</p>
+        <input type="hidden" id="myUsername" value="{{ user.username }}">
 
         <div class="row mb-4">
-            <div class="col-md-6">
-                <label for="myUsername">نام کاربری من:</label>
-                <input id="myUsername" class="form-control" placeholder="مثلاً ali" />
-            </div>
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <label for="targetUsername">نام کاربری مقصد:</label>
-                <input id="targetUsername" class="form-control" placeholder="مثلاً sara" />
+                <input id="targetUsername" class="form-control" placeholder="مثلاً sYPT(برای تماس مستقیم کلیک کنید) sara" />
             </div>
         </div>
 
@@ -86,6 +79,12 @@
             </div>
         </div>
     </div>
+    {% else %}
+    <div class="card-custom text-center">
+        <h2>لطفاً وارد شوید</h2>
+        <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-primary">ورود با گوگل</a>
+    </div>
+    {% endif %}
 </div>
 
 <script>
@@ -158,7 +157,7 @@
             }
         };
 
-        socket = new WebSocket("wss://videomessage.liara.run");
+        socket = new WebSocket(`ws://localhost:8000/ws/video/${myUsername}/`);
 
         socket.onopen = async () => {
             console.log("WebSocket connected");
