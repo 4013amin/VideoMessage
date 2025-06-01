@@ -4,4 +4,4 @@ from django.shortcuts import render
 
 
 def video_call_view(request):
-    return render(request, 'video_call.html')
+    return render(request, 'index.html')

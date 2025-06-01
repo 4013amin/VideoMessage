@@ -21,6 +21,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('websocket.url')),
 
-    path('accounts/', include('allauth.urls')),
-
 ]
