@@ -1,8 +1,8 @@
 from django.apps import AppConfig
 
-class VideoChatConfig(AppConfig):
+class WebsocketConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'video_chat'
+    name = 'websocket'
 
     def ready(self):
-        import video_chat.signals
+        import websocket.signals  

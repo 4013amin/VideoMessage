@@ -17,6 +17,13 @@ INSTALLED_APPS = [
     'channels',
     'social_django',
     'websocket',
+    
+     # اضافه کردن اپلیکیشن‌های django-allauth
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',  # برای احرا
 ]
 
 MIDDLEWARE = [
@@ -27,6 +34,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # اضافه کردن این خط
 ]
 
 ROOT_URLCONF = 'VideoChat.urls'
