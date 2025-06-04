@@ -1,11 +1,13 @@
 import os
-from django.core.asgi import get_asgi_application
-from channels.auth import AuthMiddlewareStack
+import django
 from channels.routing import ProtocolTypeRouter, URLRouter
-import websocket.routing
+from channels.auth import AuthMiddlewareStack
+from django.core.asgi import get_asgi_application
 
-# ⚠️ این خط بسیار مهم است!
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'VideoChat.settings')
+django.setup() # صراحتاً django.setup() را اینجا فراخوانی کنید
+
+import websocket.routing # ایمپورت بعد از django.setup()
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),

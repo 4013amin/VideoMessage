@@ -1,40 +1,33 @@
-import os
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'your-secret-key'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-default-secret-key-for-development')
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# اپلیکیشن‌ها
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # اپلیکیشن‌های مربوط به auth
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-
-    # WebSocket support
     'channels',
-
-    # اپلیکیشن خودت
     'websocket',
-    
 ]
 
-# Middlewareها
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -49,12 +42,12 @@ ROOT_URLCONF = 'VideoChat.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # اختیاری برای قالب سفارشی
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request',  # الزامی برای allauth
+                'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -65,7 +58,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'VideoChat.wsgi.application'
 ASGI_APPLICATION = 'VideoChat.asgi.application'
 
-# پایگاه داده
+AUTH_USER_MODEL = 'websocket.CustomUser'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -73,28 +67,15 @@ DATABASES = {
     }
 }
 
-# Channel Layers
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'BACKEND': 'channels_redis.core.Redistorails_redis.RedisChannelLayer',
         'CONFIG': {
             "hosts": [('127.0.0.1', 6379)],
         },
     },
 }
 
-# Redis cache (اختیاری)
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
-    }
-}
-
-# اعتبارسنجی پسورد
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -102,62 +83,65 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# تنظیمات allauth
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-
-
 SITE_ID = 1
 
-# تنظیمات ورود
-LOGIN_REDIRECT_URL = '/'
-ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
+LOGIN_REDIRECT_URL = '/video-call/'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
-# تنظیمات Google OAuth
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': '70809775459-7fmtq0c03kgs9jm145dvak6ca1iundaq.apps.googleusercontent.com',
+            'client_id': '70809775459-7fmtq0c03kgs9jm145dvak6ca1iundaq.apps.googleuserconten t.com',
             'secret': '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',
-            'key': ''
+            'key': '',
         },
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
+        'SCOPE': ['profile', 'email', 'openid'],
+        'AUTH_PARAMS': {'access_type': 'online'},
     }
 }
 
-
-# Google OAuth credentials
-SOCIALACCOUNT_PROVIDERS['google']['APP'] = {
-    'client_id': '70809775459-7fmtq0c03kgs9jm145dvak6ca1iundaq.apps.googleusercontent.com',
-    'secret': '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',
-    'key': ''
-}
-
-# زبان و زمان
 LANGUAGE_CODE = 'fa-ir'
 TIME_ZONE = 'Asia/Tehran'
 USE_I18N = True
 USE_TZ = True
 
-# فایل‌های استاتیک
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
-# مدل کاربر سفارشی
-AUTH_USER_MODEL = 'websocket.CustomUser'
-
-# تنظیمات پیش‌فرض
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG' if DEBUG else 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+    },
+}

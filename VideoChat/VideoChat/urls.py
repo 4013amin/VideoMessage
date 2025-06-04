@@ -16,9 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views # برای logout
+
+from django.contrib import admin
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('websocket.url')),
+    path('accounts/', include('allauth.urls')),
+    path('', include('videochat.urls')),
 ]
 
+handler404 = 'videochat.views.handler404'
+handler500 = 'videochat.views.handler500'
