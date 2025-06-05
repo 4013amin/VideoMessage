@@ -29,7 +29,6 @@ class VideoCallConsumer(AsyncWebsocketConsumer):
 
     await self.accept()
 
-    # پس از accept کانکشن، اکنون channel_name در دسترس است
     if not hasattr(self, "channel_name"):
         logger.error(f"[ERROR] No channel_name for {self.username}")
         await self.close()

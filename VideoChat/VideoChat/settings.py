@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-default-secret-key-for-development')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1','192.168.1.110']
+ALLOWED_HOSTS = ['.liara.run', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'daphne',
@@ -68,15 +68,23 @@ DATABASES = {
     }
 }
 
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": "redis://:JEJ4S2TNIwkKvbvKNNMcoRKY@videomassagesql:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
 }
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "secret-key-for-dev")
+DEBUG = os.environ.get("DJANGO_DEBUG", "False") == "True"
 
 
 AUTH_PASSWORD_VALIDATORS = [

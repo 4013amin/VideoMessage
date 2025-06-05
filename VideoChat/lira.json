@@ -1,32 +1,14 @@
 {
-  "platform": "python",
-  "app": "videomessage",
-  "port": 80,
-  "asgi": true,
-  "build": {
-    "installCommand": "pip install -r requirements.txt",
-    "startCommand": "daphne -b 0.0.0.0 -p $PORT VideoChat.asgi:application"
-  },
-  "env": {
-    "DJANGO_SETTINGS_MODULE": "VideoChat.settings",
-    "DJANGO_DEBUG": "True",
-    "REDIS_URL": "redis://:IQjuStiwQe6jdUBYpLJ3IlwE@videomessagesql:6379/0",
-    "TZ": "Asia/Tehran"
-  },
-  "healthCheck": {
-    "path": "/health/",
-    "interval": 30,
-    "timeout": 5,
-    "retries": 3
-  },
-  "disks": [
+  "platform": "django",
+  "app": "videomassage",
+  "port": 8000,
+  "disks": [],
+  "services": [
     {
-      "name": "storage",
-      "mountTo": "media"
-    },
-    {
-      "name": "static",
-      "mountTo": "staticfiles"
+      "name": "redis",
+      "type": "redis",
+      "host": "redis",
+      "port": 6379
     }
   ]
 }
