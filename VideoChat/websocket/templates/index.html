@@ -215,19 +215,28 @@
     </style>
 </head>
 <body>
-
+<!-- templates/video_call.html -->
 <div class="container-main">
     {% if user.is_authenticated %}
     <div class="card-custom">
         <div class="user-info">
-            <h2 class="mb-0"><i class="fas fa-satellite-dish me-2"></i> StarCall</h2>
+            <h2 class="mb-0">
+                <i class="fas fa-satellite-dish me-2"></i> StarCall
+            </h2>
             <div>
-                <span class="me-2">خوش آمدید، فرمانده <strong>{% firstof user.get_full_name user.username %}</strong>!</span>
-                <a href="{% url 'account_logout' %}" class="btn btn-sm btn-outline-light-enhanced"><i class="fas fa-sign-out-alt me-1"></i> خروج از سامانه</a>
+                <span class="me-2">
+                    خوش آمدید، فرمانده
+                    <strong>
+                        {% firstof user.get_full_name user.username %}
+                    </strong>!
+                </span>
+                <a href="{% url 'account_logout' %}" class="btn btn-sm btn-outline-light-enhanced">
+                    <i class="fas fa-sign-out-alt me-1"></i> خروج از سامانه
+                </a>
             </div>
         </div>
-        
-        <input type="hidden" id="myUsername" value="{{ user.username }}">
+
+        <input type="hidden" id="myUsername" value="{{ user.username|default:'' }}">
 
         <div class="row mb-4">
             <div class="col-md-12">
@@ -237,9 +246,15 @@
         </div>
 
         <div class="text-center mb-4">
-            <button id="startCallButton" class="btn btn-primary-glow me-2 px-4 btn-pulse" onclick="startCall()"><i class="fas fa-phone-volume me-2"></i> تماس با شناسه</button>
-            <button id="randomCallButton" class="btn btn-success-glow px-4 btn-pulse" onclick="startRandomCall()"><i class="fas fa-random me-2"></i> اتصال به نزدیکترین سیگنال</button>
-            <button id="endCallButton" class="btn btn-danger-glow px-4" onclick="endCall()" style="display: none;"><i class="fas fa-phone-slash me-2"></i> قطع ارتباط</button>
+            <button id="startCallButton" class="btn btn-primary-glow me-2 px-4 btn-pulse" onclick="startCall()">
+                <i class="fas fa-phone-volume me-2"></i> تماس با شناسه
+            </button>
+            <button id="randomCallButton" class="btn btn-success-glow px-4 btn-pulse" onclick="startRandomCall()">
+                <i class="fas fa-random me-2"></i> اتصال به نزدیکترین سیگنال
+            </button>
+            <button id="endCallButton" class="btn btn-danger-glow px-4" onclick="endCall()" style="display: none;">
+                <i class="fas fa-phone-slash me-2"></i> قطع ارتباط
+            </button>
         </div>
 
         <div class="row mt-4">
@@ -252,16 +267,20 @@
                 <video id="remoteVideo" autoplay playsinline></video>
             </div>
         </div>
+
         <div id="statusMessages" class="status-messages text-center"></div>
     </div>
     {% else %}
     <div class="card-custom text-center login-card">
-        <h2 class="mb-4"><i class="fas fa-user-astronaut me-2"></i> ورود به پایگاه StarCall</h2>
-        <p class="mb-4" style="color: var(--text-muted-color);">برای برقراری ارتباطات بین ستاره‌ای، لطفاً وارد شوید.</p>
-      <a href="{% provider_login_url 'google' %}?next=/video-call/" class="btn btn-lg btn-cosmic btn-pulse">
-
-    <i class="fab fa-google me-2"></i> ورود با حساب گوگل کهکشانی
-</a>
+        <h2 class="mb-4">
+            <i class="fas fa-user-astronaut me-2"></i> ورود به پایگاه StarCall
+        </h2>
+        <p class="mb-4" style="color: var(--text-muted-color);">
+            برای برقراری ارتباطات بین ستاره‌ای، لطفاً وارد شوید.
+        </p>
+        <a href="{% provider_login_url 'google' %}?next=/video-call/" class="btn btn-lg btn-cosmic btn-pulse">
+            <i class="fab fa-google me-2"></i> ورود با حساب گوگل کهکشانی
+        </a>
     </div>
     {% endif %}
 </div>
