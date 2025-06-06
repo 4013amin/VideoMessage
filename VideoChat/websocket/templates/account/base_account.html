@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarCall | {% block head_title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-glow: #00f2ff;
+            --secondary-glow: #ff00f2;
+            --dark-bg: #0a0f1f;
+            --dark-card: rgba(15, 25, 50, 0.85);
+            --text-color: #e0e0ff;
+            --text-muted-color: #a0a0cc;
+        }
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            direction: rtl;
+            background: linear-gradient(135deg, #020024 0%, #090979 35%, #00d4ff 100%);
+            background-attachment: fixed;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container-main {
+            max-width: 500px;
+            width: 100%;
+        }
+        .card-custom {
+            background-color: var(--dark-card);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(var(--primary-glow), 0.5), 0 0 50px rgba(var(--secondary-glow), 0.3);
+            border: 1px solid rgba(var(--primary-glow), 0.3);
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+        .card-custom h2 {
+            color: var(--text-color);
+            text-shadow: 0 0 10px var(--primary-glow);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(var(--primary-glow), 0.4);
+            color: var(--text-color);
+            border-radius: 8px;
+        }
+        .form-control:focus {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 10px var(--primary-glow);
+            color: var(--text-color);
+        }
+        .btn {
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        .btn-cosmic {
+            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
+            border: none;
+            color: white;
+            width: 100%;
+            padding: 12px;
+        }
+        .btn-cosmic:hover {
+            box-shadow: 0 0 20px var(--primary-glow), 0 0 10px var(--secondary-glow);
+            transform: translateY(-2px);
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .helptext, .text-muted, small {
+            color: var(--text-muted-color) !important;
+            font-size: 0.8rem;
+        }
+        .alert {
+             border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-main">
+        <div class="card-custom">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>

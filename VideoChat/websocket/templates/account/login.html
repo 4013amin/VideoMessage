@@ -1,30 +1,49 @@
-<!-- templates/account/login.html -->
-{% load socialaccount %}
+{% extends "account/base_account.html" %}
+{% load i18n %}
+{% load allauth socialaccount %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gradient-to-r from-blue-500 to-purple-600 min-h-screen flex items-center justify-center">
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
 
-  <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-sm w-full">
-    <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">ورود به حساب کاربری</h1>
+{% block content %}
+    <h2><i class="fas fa-user-astronaut me-2"></i> {% trans "ورود به پایگاه" %}</h2>
 
-    <a href="{% provider_login_url 'google' %}" 
-       class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-md transition duration-300">
-      <img src="https://cdn-icons-png.flaticon.com/512/281/281764.png" class="w-5 h-5" />
-      ورود با Google
-    </a>
+    {% if socialaccount.providers %}
+        <p class="text-center" style="color: var(--text-muted-color);">{% blocktrans %}برای ورود سریع از حساب گوگل کهکشانی خود استفاده کنید:{% endblocktrans %}</p>
+        <div class="socialaccount_ballot">
+            <a href="{% provider_login_url 'google' %}" class="btn btn-lg btn-cosmic mb-4">
+                <i class="fab fa-google me-2"></i> {% trans "ورود با گوگل" %}
+            </a>
+        </div>
+        <div class="login-or text-center mb-4" style="color: var(--text-muted-color);">{% trans "یا" %}</div>
+    {% endif %}
 
-    <p class="text-center mt-6 text-sm text-gray-500">
-      هنوز حسابی ندارید؟
-      <a href="{% url 'account_signup' %}" class="text-blue-600 hover:underline">ثبت‌نام کنید</a>
-    </p>
-  </div>
+    <form class="login" method="POST" action="{% url 'account_login' %}">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_login" class="mb-2">{% trans "نام کاربری یا ایمیل" %}:</label>
+            {{ form.login }}
+            {% if form.login.errors %}
+                <div class="text-danger small mt-1">{{ form.login.errors.as_text }}</div>
+            {% endif %}
+        </div>
 
-</body>
-</html>
+        <div class="form-group">
+            <label for="id_password" class="mb-2">{% trans "رمز عبور" %}:</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+                <div class="text-danger small mt-1">{{ form.password.errors.as_text }}</div>
+            {% endif %}
+        </div>
+
+        {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+        {% endif %}
+
+        <button class="btn btn-cosmic" type="submit">{% trans "ورود" %}</button>
+        
+        <div class="text-center mt-3">
+             <a class="button secondaryAction small" href="{% url 'account_reset_password' %}">{% trans "رمز عبور را فراموش کرده‌اید؟" %}</a>
+        </div>
+    </form>
+{% endblock %}

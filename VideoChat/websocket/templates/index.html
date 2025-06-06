@@ -18,7 +18,7 @@
             --dark-bg: #0a0f1f; /* #0c0c1d; */
             --dark-card: rgba(15, 25, 50, 0.85); /* #1a1a3a; */
             --text-color: #e0e0ff;
-            --text-muted-color: #a0a0cc;
+            --text-muted-color: #a0a0cc6b;
             --accent-color: #7d26cb; /* یک بنفش فضایی */
         }
 
@@ -286,6 +286,7 @@
 </div>
 
 <script>
+    // عناصر DOM
     const localVideo = document.getElementById("localVideo");
     const remoteVideo = document.getElementById("remoteVideo");
     const targetUsernameInput = document.getElementById("targetUsername");
@@ -294,48 +295,47 @@
     const endCallButton = document.getElementById("endCallButton");
     const statusMessages = document.getElementById("statusMessages");
 
+    // متغیرهای وضعیت
     let localStream = null;
     let pc = null;
     let socket = null;
-    let myUsername = ''; 
+    let myUsername = '';
     let currentTargetUsername = '';
     let isCallActive = false;
 
-    const iceServers = [
-        {urls: "stun:stun.l.google.com:19302"},
-        {urls: "stun:stun1.l.google.com:19302"},
-        {urls: "stun:stun2.l.google.com:19302"}
-    ];
+    // سرورهای STUN
+    const iceServers = [{
+        urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"]
+    }];
 
     function showStatus(message, isError = false) {
         statusMessages.textContent = message;
         statusMessages.className = `status-messages text-center ${isError ? 'text-danger-glow' : 'text-success-glow'}`;
     }
 
+    // --- مدیریت مدیا ---
     async function getMedia(audio = true, video = true) {
         try {
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
             }
-            localStream = await navigator.mediaDevices.getUserMedia({video: video, audio: audio});
+            localStream = await navigator.mediaDevices.getUserMedia({ video, audio });
             localVideo.srcObject = localStream;
             return true;
         } catch (err) {
             console.error("Media access denied or failed:", err);
-            showStatus("دسترسی به دوربین/میکروفن برای ارسال سیگنال ضروری است. لطفا مجوزها را بررسی کنید.", true);
+            showStatus("دسترسی به دوربین/میکروفن برای ارسال سیگنال ضروری است.", true);
             return false;
         }
     }
 
+    // --- مدیریت WebRTC Peer Connection ---
     function createPeerConnection() {
-        if (pc) {
-            pc.close();
-        }
+        if (pc) pc.close();
         pc = new RTCPeerConnection({ iceServers });
 
         pc.onicecandidate = event => {
-            if (event.candidate && currentTargetUsername && socket && socket.readyState === WebSocket.OPEN) {
-                console.log("Sending ICE candidate to:", currentTargetUsername);
+            if (event.candidate && socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                     type: 'ice',
                     target: currentTargetUsername,
@@ -346,137 +346,93 @@
 
         pc.ontrack = event => {
             console.log("Remote track received");
-            if (event.streams && event.streams[0]) {
-                remoteVideo.srcObject = event.streams[0];
-            } else {
-                if (!remoteVideo.srcObject && event.track) { 
-                    let inboundStream = new MediaStream();
-                    inboundStream.addTrack(event.track);
-                    remoteVideo.srcObject = inboundStream;
-                }
-            }
+            remoteVideo.srcObject = event.streams[0];
             showStatus(`ارتباط با ${currentTargetUsername} برقرار شد.`, false);
         };
 
         pc.oniceconnectionstatechange = () => {
             console.log("ICE connection state change:", pc.iceConnectionState);
-            const states = ['disconnected', 'closed', 'failed'];
-            if (states.includes(pc.iceConnectionState)) {
-                if (isCallActive) {
-                    showStatus(`ارتباط با ${currentTargetUsername} قطع شد. (ICE: ${pc.iceConnectionState})`, true);
-                    endCallCleanup();
-                }
+            const failedStates = ['disconnected', 'failed', 'closed'];
+            if (failedStates.includes(pc.iceConnectionState) && isCallActive) {
+                showStatus(`ارتباط با ${currentTargetUsername} قطع شد.`, true);
+                endCallCleanup();
             }
         };
-        
+
         if (localStream) {
             localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
         } else {
-            console.warn("Local stream not available when creating peer connection");
-            showStatus("سیگنال ویدیوی شما فعال نیست. ابتدا دسترسی به دوربین را فراهم کنید.", true);
+            console.warn("Local stream not available when creating peer connection.");
         }
     }
+    
+    // --- مدیریت WebSocket ---
+    function connectWebSocket() {
+        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const wsURL = `${wsScheme}://${window.location.host}/ws/video-call/`;
+        
+        console.log("Connecting to WebSocket at:", wsURL);
+        socket = new WebSocket(wsURL);
 
+        socket.onopen = () => {
+            console.log("WebSocket connected for user:", myUsername);
+            showStatus("اتصال به شبکه بین ستاره‌ای برقرار شد.", false);
+        };
+        socket.onmessage = handleSocketMessage;
+        socket.onerror = (e) => {
+            console.error("WebSocket Error:", e);
+            showStatus("خطا در شبکه بین ستاره‌ای. ارتباط ممکن نیست.", true);
+            endCallCleanup();
+        };
+        socket.onclose = (e) => {
+            console.warn("WebSocket connection closed. Code:", e.code);
+            if (isCallActive) {
+                showStatus("ارتباط با شبکه بین ستاره‌ای قطع شد. تماس پایان یافت.", true);
+                endCallCleanup();
+            }
+        };
+    }
+    
+    // --- منطق شروع تماس ---
     async function startCallInitiation(isRandomCall) {
         if (isCallActive) {
-            alert("شما در حال حاضر در یک ارتباط فعال هستید. ابتدا ارتباط فعلی را قطع کنید.");
+            alert("شما در حال حاضر در یک ارتباط فعال هستید.");
             return;
         }
-
+        
         const mediaReady = await getMedia();
-        if (!mediaReady) {
-            showStatus("امکان برقراری ارتباط بدون سیگنال ویدیویی/صوتی وجود ندارد.", true);
-            return;
-        }
+        if (!mediaReady) return;
 
         if (isRandomCall) {
-            currentTargetUsername = ''; 
-            targetUsernameInput.value = ''; 
+            targetUsernameInput.value = '';
+            showStatus("در حال جستجوی نزدیکترین سیگنال...", false);
+            socket.send(JSON.stringify({ type: 'get_random_user' }));
         } else {
             const target = targetUsernameInput.value.trim();
             if (!target) {
-                alert("شناسه فضایی مقصد را برای تماس مستقیم وارد کنید.");
+                alert("شناسه فضایی مقصد را وارد کنید.");
                 return;
             }
             if (target === myUsername) {
-                alert("نمی‌توانید با خودتان در این بُعد تماس بگیرید!");
+                alert("نمی‌توانید با خودتان تماس بگیرید!");
                 return;
             }
             currentTargetUsername = target;
+            await initiateCall(target);
         }
-        
-        showStatus(isRandomCall ? "در حال جستجوی نزدیکترین سیگنال..." : `در حال برقراری ارتباط با ${currentTargetUsername}...`, false);
-        createPeerConnection();
-        connectWebSocketAndInitiate(isRandomCall);
-    }
-
-    function startCall() {
-        startCallInitiation(false);
-    }
-
-    function startRandomCall() {
-        startCallInitiation(true);
     }
     
-    async function connectWebSocketAndInitiate(isRandom) {
-        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
-        const socket = new WebSocket("wss://videomassage.liara.run/ws/video-call/");
-
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            if (isRandom) {
-                socket.send(JSON.stringify({type: 'get_random_user'}));
-            } else {
-                await initiateOffer();
-            }
-        } else {
-            if (socket) socket.close();
-            socket = new WebSocket(wsURL);
-
-            socket.onopen = async () => {
-                console.log("WebSocket connected for user:", myUsername);
-                showStatus("اتصال به شبکه بین ستاره‌ای برقرار شد.", false);
-                if (isRandom) {
-                    socket.send(JSON.stringify({type: 'get_random_user'}));
-                } else {
-                   await initiateOffer();
-                }
-            };
-
-            socket.onmessage = handleSocketMessage;
-            socket.onerror = handleSocketError;
-            socket.onclose = handleSocketClose;
-        }
-    }
-
-    function handleSocketError(e) {
-        console.error("WebSocket Error:", e);
-        showStatus("خطا در شبکه بین ستاره‌ای. ارتباط ممکن نیست.", true);
-        endCallCleanup();
-    }
-
-    function handleSocketClose(e) {
-        console.warn("WebSocket connection closed. Code:", e.code, "Reason:", e.reason, "Clean:", e.wasClean);
-        if (isCallActive) { 
-           showStatus("ارتباط با شبکه بین ستاره‌ای قطع شد. تماس پایان یافت.", true);
-        }
-        if (!e.wasClean && isCallActive) { 
-            endCallCleanup();
-        } else if (!isCallActive && socket) { 
-            socket = null;
-        }
-    }
-
-    async function initiateOffer() {
-        if (!pc || !currentTargetUsername) {
-            console.error("PeerConnection or targetUsername not set for initiating offer.");
-            showStatus("خطا در ارسال سیگنال اولیه. شناسه مقصد نامشخص است.", true);
-            return;
-        }
+    async function initiateCall(target) {
+        currentTargetUsername = target;
+        createPeerConnection();
+        
         try {
-            showStatus(`در حال ارسال درخواست ارتباط به ${currentTargetUsername}...`, false);
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
-            socket.send(JSON.stringify({type: 'offer', target: currentTargetUsername, offer}));
+            
+            showStatus(`در حال ارسال درخواست به ${target}...`, false);
+            socket.send(JSON.stringify({ type: 'offer', target: target, offer }));
+            
             isCallActive = true;
             updateCallButtons();
         } catch (err) {
@@ -485,114 +441,82 @@
             endCallCleanup();
         }
     }
+    
+    function startCall() { startCallInitiation(false); }
+    function startRandomCall() { startCallInitiation(true); }
 
+    // --- مدیریت پیام‌های ورودی از WebSocket ---
     async function handleSocketMessage(event) {
-        let data;
-        try {
-            data = JSON.parse(event.data);
-        } catch (e) {
-            console.error("Invalid JSON received:", event.data);
-            return;
-        }
+        const data = JSON.parse(event.data);
         console.log("WebSocket message received:", data);
-
-        if (!data || !data.type) {
-            console.warn("پیام دریافتی نامعتبر یا بدون نوع:", data);
-            return;
-        }
+        const sender = data.sender;
 
         switch (data.type) {
             case 'random_user':
-                if (!data.target) {
-                    showStatus("سیگنالی برای ارتباط رندوم یافت نشد. لطفاً بعداً تلاش کنید.", true);
-                    endCallCleanup(); 
-                    return;
+                if (data.target) {
+                    targetUsernameInput.value = data.target;
+                    await initiateCall(data.target);
+                } else {
+                    showStatus("سیگنال آنلاینی برای ارتباط رندوم یافت نشد.", true);
                 }
-                currentTargetUsername = data.target;
-                targetUsernameInput.value = currentTargetUsername; 
-                showStatus(`سیگنال ${currentTargetUsername} برای ارتباط رندوم یافت شد. در حال برقراری ارتباط...`, false);
-                await initiateOffer();
                 break;
 
             case 'offer':
-                if (isCallActive && data.sender !== currentTargetUsername) {
-                    console.warn(`Incoming call from ${data.sender} while busy with ${currentTargetUsername}. Ignoring.`);
-                    return;
-                }
+                if (isCallActive) return; // Ignore if already in a call
                 
-                const mediaReadyForOffer = await getMedia();
-                if (!mediaReadyForOffer) {
-                    socket.send(JSON.stringify({ type: 'call_rejected', target: data.sender, reason: 'Media not available' }));
-                    showStatus(`سیگنال ${data.sender} دریافت شد اما امکان پاسخگویی به دلیل عدم دسترسی به مدیا وجود ندارد.`, true);
-                    return;
-                }
-
-                createPeerConnection(); 
+                const mediaReady = await getMedia();
+                if (!mediaReady) return; // Can't answer without media
                 
-                currentTargetUsername = data.sender;
-                targetUsernameInput.value = currentTargetUsername; 
-                showStatus(`سیگنال ورودی از ${currentTargetUsername}. در حال پاسخ...`, false);
+                currentTargetUsername = sender;
+                targetUsernameInput.value = sender;
+                createPeerConnection();
                 
+                showStatus(`سیگنال ورودی از ${sender}. در حال پاسخ...`, false);
                 try {
                     await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
                     const answer = await pc.createAnswer();
                     await pc.setLocalDescription(answer);
-                    socket.send(JSON.stringify({type: 'answer', target: data.sender, answer}));
+                    socket.send(JSON.stringify({ type: 'answer', target: sender, answer }));
                     isCallActive = true;
                     updateCallButtons();
                 } catch (err) {
                     console.error("Error processing offer:", err);
-                    showStatus(`خطا در پردازش سیگنال از ${currentTargetUsername}.`, true);
-                    endCallCleanup();
                 }
                 break;
 
             case 'answer':
-                if (data.sender === currentTargetUsername) {
-                    try {
-                        await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-                    } catch (err) {
-                        console.error("Error setting remote description from answer:", err);
-                        showStatus(`خطا در پردازش پاسخ از ${currentTargetUsername}.`, true);
-                        endCallCleanup();
-                    }
-                } else {
-                    console.warn("Received answer from unexpected sender:", data.sender);
+                if (sender === currentTargetUsername) {
+                    await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
                 }
                 break;
 
             case 'ice':
-                if (data.candidate && pc && pc.remoteDescription) { 
-                     if (data.sender === currentTargetUsername || !data.sender) { 
-                        try {
-                            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-                        } catch (err) {
-                            console.error("Error adding ICE candidate:", err, data.candidate);
-                        }
-                    } else {
-                         console.warn("Received ICE candidate from unexpected sender:", data.sender, "expected:", currentTargetUsername);
+                if (sender === currentTargetUsername && data.candidate) {
+                    try {
+                        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    } catch (err) {
+                        console.error("Error adding ICE candidate:", err);
                     }
-                } else if (!pc || !pc.remoteDescription) {
-                    console.warn("Received ICE candidate but pc or remoteDescription is not ready. Queuing might be needed.");
                 }
                 break;
-            case 'error': 
-                showStatus(`پیام از سرور: ${data.message}`, true);
-                if (data.message && data.message.toLowerCase().includes("not online")) {
+            
+            case 'hangup':
+                if (sender === currentTargetUsername) {
+                    showStatus(`ارتباط با ${sender} توسط ایشان قطع شد.`, true);
                     endCallCleanup();
                 }
                 break;
-            case 'hangup': 
-                if (data.sender === currentTargetUsername) {
-                    showStatus(`ارتباط با ${data.sender} توسط ایشان قطع شد.`, true);
+            
+            case 'error':
+                 showStatus(`پیام از سرور: ${data.message}`, true);
+                 if (data.message && data.message.toLowerCase().includes("not online")) {
                     endCallCleanup();
-                }
-                break;
-            default:
-                console.warn("نوع پیام ناشناخته:", data);
+                 }
+                 break;
         }
     }
 
+    // --- پایان تماس و تمیزکاری ---
     function endCall() {
         if (socket && socket.readyState === WebSocket.OPEN && currentTargetUsername && isCallActive) {
             socket.send(JSON.stringify({ type: 'hangup', target: currentTargetUsername }));
@@ -602,8 +526,8 @@
     }
     
     function endCallCleanup() {
-        console.log("Cleaning up call resources for target:", currentTargetUsername);
         isCallActive = false;
+        currentTargetUsername = '';
 
         if (pc) {
             pc.close();
@@ -612,34 +536,36 @@
         if (localStream) {
             localStream.getTracks().forEach(track => track.stop());
             localVideo.srcObject = null;
+            localStream = null;
         }
         remoteVideo.srcObject = null;
+        showStatus("");
         updateCallButtons();
     }
 
     function updateCallButtons() {
-        const callInProgress = isCallActive && currentTargetUsername;
+        const callInProgress = isCallActive;
         startCallButton.style.display = callInProgress ? 'none' : 'inline-block';
         randomCallButton.style.display = callInProgress ? 'none' : 'inline-block';
         endCallButton.style.display = callInProgress ? 'inline-block' : 'none';
         targetUsernameInput.disabled = callInProgress;
     }
 
-    window.onload = async () => {
+    // --- راه‌اندازی اولیه ---
+    window.onload = () => {
         {% if user.is_authenticated %}
-        myUsername = "{{ user.username }}";
-        console.log("Authenticated user:", myUsername);
-        updateCallButtons();
+            myUsername = "{{ user.username }}";
+            console.log("Authenticated user:", myUsername);
+            connectWebSocket(); // اتصال به وب‌سوکیت بعد از بارگذاری صفحه
+            updateCallButtons();
+            getMedia(true, true); // درخواست دسترسی به مدیا در ابتدا
         {% else %}
-        console.log("User not authenticated.");
+            console.log("User not authenticated.");
         {% endif %}
     };
 
     window.addEventListener('beforeunload', () => {
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            if (isCallActive && currentTargetUsername) {
-                socket.send(JSON.stringify({ type: 'hangup', target: currentTargetUsername, reason: 'user_left' }));
-            }
+        if (socket) {
             socket.close(1000, "Page closed");
         }
     });
