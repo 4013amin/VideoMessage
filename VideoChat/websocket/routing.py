@@ -1,6 +1,7 @@
-from django.urls import path
+# app/routing.py
+from django.urls import re_path
 from . import consumers
 
 websocket_urlpatterns = [
-    path("ws/video-call/", consumers.VideoCallConsumer.as_asgi()),
+    re_path(r'wss/video-call/$', consumers.VideoCallConsumer.as_asgi()),
 ]

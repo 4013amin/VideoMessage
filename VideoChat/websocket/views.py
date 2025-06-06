@@ -36,10 +36,7 @@ def video_call_view(request):
     try:
         context = get_user_display_info(request)
         context['page_title'] = "اتصال ویدیویی StarCall"
-        
-        # Add WebSocket connection details
-        context['ws_protocol'] = 'wss' if not DEBUG else 'ws'
-        context['ws_host'] = request.get_host()
+    
         
         return render(request, 'index.html', context)
     

@@ -12,8 +12,6 @@ import websocket.routing # ایمپورت بعد از django.setup()
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
-        URLRouter(
-            websocket.routing.websocket_urlpatterns
-        )
-    ),
+        URLRouter(websocket.routing.websocket_urlpatterns)
+    )
 })
