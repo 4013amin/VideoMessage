@@ -420,7 +420,7 @@
     
     async function connectWebSocketAndInitiate(isRandom) {
         const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
-        const wsURL = `${wsScheme}://${window.location.host}/ws/video/`;
+        const wsURL = `${wsScheme}://${window.location.host}/ws/video-call/`;
 
         if (socket && socket.readyState === WebSocket.OPEN) {
             if (isRandom) {
