@@ -30,7 +30,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'VideoChat.urls'
@@ -55,7 +54,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'VideoChat.wsgi.application'
 ASGI_APPLICATION = 'VideoChat.asgi.application'
 
-AUTH_USER_MODEL = 'websocket.CustomUser'
 
 DATABASES = {
     'default': {
@@ -92,29 +90,29 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-SITE_ID = 1
 
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'optional'
-LOGIN_REDIRECT_URL = '/video-call/'
-ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+# SITE_ID = 1
 
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'APP': {
-            'client_id': '70809775459-7fmtq0c03kgs9jm145dvak6ca1iundaq.apps.googleuserconten t.com',
-            'secret': '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',
-            'key': '',
-        },
-        'SCOPE': ['profile', 'email', 'openid'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-    }
-}
+# ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_USERNAME_REQUIRED = True
+# ACCOUNT_EMAIL_VERIFICATION = 'optional'
+# LOGIN_REDIRECT_URL = '/video-call/'
+# ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         'APP': {
+#             'client_id': '70809775459-7fmtq0c03kgs9jm145dvak6ca1iundaq.apps.googleuserconten t.com',
+#             'secret': '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',
+#             'key': '',
+#         },
+#         'SCOPE': ['profile', 'email', 'openid'],
+#         'AUTH_PARAMS': {'access_type': 'online'},
+#     }
+# }
 
 LANGUAGE_CODE = 'fa-ir'
 TIME_ZONE = 'Asia/Tehran'
